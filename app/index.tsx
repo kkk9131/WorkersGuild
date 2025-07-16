@@ -1,58 +1,75 @@
-import { View } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Link } from 'expo-router';
-import { ThemedContainer, ThemedText, ThemedButton } from '@/components/common';
-import { ThemeToggle } from '@/components/ui';
+import { commonStyles, colors } from '@/lib/styles';
 import { useThemeStore } from '@/stores/useThemeStore';
 
 export default function HomeScreen() {
-  const { theme } = useThemeStore();
+  const { theme, toggleTheme } = useThemeStore();
+  const isGameTheme = theme === 'game';
 
   return (
-    <ThemedContainer className="items-center justify-center p-6">
-      {/* テーマ切り替えボタン（右上） */}
-      <View className="absolute top-16 right-6">
-        <ThemeToggle />
-      </View>
+    <View style={[
+      commonStyles.centerContainer,
+      { backgroundColor: isGameTheme ? colors.game.primary : colors.business.primary }
+    ]}>
+      <StatusBar style="light" />
+      
+      {/* テーマ切り替えボタン */}
+      <Pressable 
+        onPress={toggleTheme}
+        style={[commonStyles.absolute, { top: 60, right: 20 }]}
+      >
+        <View style={[
+          commonStyles.card,
+          { paddingVertical: 8, paddingHorizontal: 16 }
+        ]}>
+          <Text style={commonStyles.text}>
+            {isGameTheme ? '🎮 ゲーム' : '💼 ビジネス'}
+          </Text>
+        </View>
+      </Pressable>
 
-      <View className="items-center mb-8">
-        <ThemedText variant="primary" size="4xl" weight="bold" className="mb-2">
-          Workers Guild
-        </ThemedText>
-        <ThemedText variant="secondary" size="lg" className="text-center">
-          建設業界のための{'\n'}ゲーミフィケーションタスク管理
-        </ThemedText>
-      </View>
+      <Text style={isGameTheme ? commonStyles.titleGame : commonStyles.title}>
+        Workers Guild
+      </Text>
+      <Text style={commonStyles.subtitle}>
+        建設業界のための{'\n'}ゲーミフィケーションタスク管理
+      </Text>
 
-      <View className="w-full max-w-sm space-y-4">
+      <View style={{ width: '100%', maxWidth: 320 }}>
+        <Link href="/demo" asChild>
+          <Pressable style={[
+            commonStyles.buttonPrimary,
+            { marginBottom: 16 },
+            isGameTheme && commonStyles.shadow
+          ]}>
+            <Text style={commonStyles.buttonText}>テーマデモ</Text>
+          </Pressable>
+        </Link>
+
         <Link href="/auth/login" asChild>
-          <ThemedButton variant="primary" size="lg" className="w-full">
-            ログイン
-          </ThemedButton>
+          <Pressable style={[
+            commonStyles.buttonPrimary,
+            { marginBottom: 16 }
+          ]}>
+            <Text style={commonStyles.buttonText}>ログイン</Text>
+          </Pressable>
         </Link>
 
         <Link href="/auth/register" asChild>
-          <ThemedButton variant="secondary" size="lg" className="w-full">
-            新規登録
-          </ThemedButton>
-        </Link>
-
-        {/* デモページへのリンク */}
-        <Link href="/demo" asChild>
-          <ThemedButton 
-            variant={theme === 'game' ? 'success' : 'secondary'} 
-            size="md" 
-            className="w-full mt-8"
-          >
-            テーマデモを見る
-          </ThemedButton>
+          <Pressable style={commonStyles.buttonSecondary}>
+            <Text style={commonStyles.buttonText}>新規登録</Text>
+          </Pressable>
         </Link>
       </View>
 
-      <View className="absolute bottom-10">
-        <ThemedText variant="muted" size="sm">
-          Version 1.0.0
-        </ThemedText>
-      </View>
-    </ThemedContainer>
+      <Text style={[
+        commonStyles.absolute,
+        { bottom: 40, color: colors.business.subtext, fontSize: 12 }
+      ]}>
+        Version 1.0.0
+      </Text>
+    </View>
   );
 }
