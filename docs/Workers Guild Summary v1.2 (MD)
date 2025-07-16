@@ -1,0 +1,92 @@
+
+# Workers Guild – Summary Requirements & Wireframe (v1.2)
+
+## 1. Project Snapshot
+* **Purpose**: Gamified app for scaffold crews and solo devs to manage tasks, skill growth, and profit.
+* **Scope (MVP)**: 5‑person in‑house crew + solo dev. Expo React Native (iOS / Android / PWA).
+* **Core Idea**: Dual UI themes – **Game** (colorful, animated) & **Business** (flat, minimal).
+
+## 2. Key Functional Blocks (★ = MVP)
+| Area | Feature |
+| --- | --- |
+| Tasks | Kanban board, leader assignment ★ |
+| Gamification | EXP bar, level‑up modal, coin burst ★ |
+| Raising | 5 stats (0‑100), 4‑stage evolution, AI training ★ |
+| Theme Toggle | Game ↔ Business instant switch ★ |
+| Finance | Sales / expense input, OCR ★ |
+| AI | Line‑up suggestion & training text generation ★ |
+
+## 3. Tech Stack (MVP)
+* **Front**: Expo RN SDK 53 + NativeWind (theme tokens)  
+* **Backend**: Supabase (Postgres, Edge Fns, Realtime, pgvector)  
+* **AI**: OpenAI GPT‑4o + LangChain  
+* **Anim**: Reanimated 4 + RN Skia · **Lite 3D**: expo‑three  
+* **State**: Zustand + React Query · **CI/CD**: EAS Build / Update
+
+## 4. Raising Logic (fixed)
+* Stats: Comm / Lead / Safety / Tech / Stamina (start 30, max 100)
+* Training gain: Low +2 · Mid +3 · High +4  
+* Evolution when average ≥ 65 / 75 / 85  
+* 20 predefined training templates; GPT‑4o personalises text.
+
+## 5. Non‑Functional Targets
+* ≥ 50 fps on low‑end Android • ≤ 1 s offline cache  
+* Supabase RLS security • WCAG 2.1 AA accessible
+
+---
+
+## 6. Wireframe Overview
+
+### Common Shell
+```
+Header 40 px          | Menu ☰ / Date | Bell 🔔 | EXP ●
+Bottom Tab 56 px      | Home • Task • Skill • Profit • Menu
+```
+
+### 6.1 Home (Dashboard)
+```
+[KPI cards – swipe]   (Margin %, EXP)
+[AI line‑up carousel] 5 cards
+[Daily quests]        3 items
+[Guild EXP bar]       progress
+```
+
+### 6.2 Task Board
+```
+4 columns: To‑Do | Doing | Review | Done
++ FAB  New Task
+Drag‑&‑drop cards (rarity colour)
+```
+
+### 6.3 Skill
+```
+Tab: Radar / Bars
+─ Radar chart of 5 stats
+─ Evolution track icons (4 stages)
+─ AI‑recommended training cards ×3
+```
+
+### 6.4 Profit
+```
+Margin ring gauge  
+Sales card | Expense card
+Expense pie chart
+Daily sparkline
+```
+
+### 6.5 Settings
+```
+Account / Notifications
+Theme toggle  ○Game  ●Business
+Auto‑disable FX (low power)
+Sync status / Logout
+```
+
+*(Game theme adds colour, parallax, coin animation; Business theme is flat & monochrome; layout identical).*
+
+---
+
+## 7. Next Steps
+1. Build Expo skeleton with Header, BottomTab, and theme toggle.
+2. Import design tokens from Figma MCP.
+3. Flesh out Task & Skill screens; connect Supabase.
