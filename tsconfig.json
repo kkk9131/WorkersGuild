@@ -13,6 +13,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -36,7 +39,11 @@
       "@/assets/*": [
         "assets/*"
       ]
-    }
+    },
+    "types": [
+      "react-native",
+      "jest"
+    ]
   },
   "include": [
     "**/*.ts",
