@@ -8,6 +8,7 @@ interface ThemedContainerProps extends ViewProps {
   variant?: 'primary' | 'secondary' | 'card' | 'overlay';
   noStatusBar?: boolean;
   className?: string;
+  children: React.ReactNode;
 }
 
 export function ThemedContainer({

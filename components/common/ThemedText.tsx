@@ -8,6 +8,7 @@ interface ThemedTextProps extends TextProps {
   size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
   weight?: 'normal' | 'medium' | 'semibold' | 'bold';
   className?: string;
+  children: React.ReactNode;
 }
 
 const sizeClasses = {
