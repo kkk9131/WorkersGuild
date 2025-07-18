@@ -1,42 +1,22 @@
-# Git ワークフローとブランチ戦略
+# Git ワークフロー - Workers Guild
+
+## 概要
+このドキュメントでは、Workers Guildプロジェクトで使用するGitワークフローのベストプラクティスを説明します。
 
 ## ブランチ戦略
 
-Workers Guild プロジェクトでは、以下のGit Flowベースのブランチ戦略を採用します。
+### メインブランチ
+- **`main`** - 本番環境にデプロイ可能な安定版コード
+- **`develop`** - 開発中の機能を統合するブランチ
 
-### 主要ブランチ
-
-1. **main** (本番環境)
-   - 常に本番環境にデプロイ可能な状態を維持
-   - 直接のコミットは禁止
-   - releaseブランチからのマージのみ許可
-
-2. **develop** (開発環境)
-   - 開発の中心となるブランチ
-   - featureブランチはここから派生し、ここにマージ
-   - 常にビルド可能な状態を維持
-
-### サポートブランチ
-
-3. **feature/** (機能開発)
-   - 命名規則: `feature/[issue-number]-[brief-description]`
-   - 例: `feature/123-add-user-authentication`
-   - developから派生し、developにマージ
-
-4. **release/** (リリース準備)
-   - 命名規則: `release/v[version-number]`
-   - 例: `release/v1.0.0`
-   - developから派生し、mainとdevelopにマージ
-
-5. **hotfix/** (緊急修正)
-   - 命名規則: `hotfix/[issue-number]-[brief-description]`
-   - 例: `hotfix/456-fix-critical-bug`
-   - mainから派生し、mainとdevelopにマージ
+### 機能ブランチ
+- **`feature/[機能名]`** - 新機能開発用
+- **`bugfix/[バグ名]`** - バグ修正用
+- **`hotfix/[修正名]`** - 緊急修正用
 
 ## コミットメッセージ規約
 
 ### フォーマット
-
 ```
 <type>(<scope>): <subject>
 
@@ -45,115 +25,244 @@ Workers Guild プロジェクトでは、以下のGit Flowベースのブラン�
 <footer>
 ```
 
-### Type (必須)
-
+### タイプ
 - **feat**: 新機能
 - **fix**: バグ修正
-- **docs**: ドキュメントのみの変更
-- **style**: コードの意味に影響を与えない変更（空白、フォーマット等）
-- **refactor**: バグ修正や機能追加を伴わないコード変更
-- **perf**: パフォーマンス改善
-- **test**: テストの追加や修正
-- **chore**: ビルドプロセスやツールの変更
-
-### Scope (オプション)
-
-影響を受けるモジュールやコンポーネント名
-
-- auth
-- task
-- user
-- team
-- ui
-- api
+- **docs**: ドキュメント更新
+- **style**: コードフォーマット（機能に影響しない変更）
+- **refactor**: リファクタリング
+- **test**: テスト追加・修正
+- **chore**: ビルドプロセスやツール変更
 
 ### 例
-
 ```
-feat(auth): バイオメトリクス認証を追加
+feat(auth): implement user profile creation with RLS policies
 
-Face IDとTouch IDによる認証機能を実装しました。
-Expo Local Authenticationを使用しています。
+- Add Supabase migration files for user_profiles table
+- Implement Row Level Security policies
+- Create automatic profile creation triggers
+- Add comprehensive tests for database security
 
 Closes #123
 ```
 
-## ワークフロー
+## ワークフロー手順
 
-### 1. 新機能開発
-
+### 1. 新機能開発の開始
 ```bash
-# developブランチから新しいfeatureブランチを作成
+# 最新のdevelopブランチを取得
 git checkout develop
 git pull origin develop
-git checkout -b feature/123-new-feature
 
-# 作業とコミット
+# 新しい機能ブランチを作成
+git checkout -b feature/authentication-core
+
+# 作業を開始
+```
+
+### 2. 開発中のコミット
+```bash
+# 変更をステージング
 git add .
-git commit -m "feat(module): 新機能の説明"
 
-# リモートにプッシュ
-git push origin feature/123-new-feature
+# コミット（規約に従ったメッセージ）
+git commit -m "feat(auth): add user profile database schema"
 
-# Pull Requestを作成してdevelopにマージ
+# 定期的にプッシュ
+git push origin feature/authentication-core
 ```
 
-### 2. リリース準備
+### 3. プルリクエストの作成
+```bash
+# 最新のdevelopと同期
+git checkout develop
+git pull origin develop
+git checkout feature/authentication-core
+git rebase develop
+
+# 最終プッシュ
+git push origin feature/authentication-core --force-with-lease
+```
+
+### 4. マージ後のクリーンアップ
+```bash
+# developに戻る
+git checkout develop
+git pull origin develop
+
+# 機能ブランチを削除
+git branch -d feature/authentication-core
+git push origin --delete feature/authentication-core
+```
+
+## プルリクエストガイドライン
+
+### タイトル
+- 明確で簡潔な説明
+- 例: `feat(auth): implement user authentication with Supabase`
+
+### 説明テンプレート
+```markdown
+## 概要
+この変更の目的と内容を簡潔に説明
+
+## 変更内容
+- [ ] 新機能の追加
+- [ ] バグ修正
+- [ ] ドキュメント更新
+- [ ] テスト追加
+
+## テスト
+- [ ] 単体テスト追加/更新
+- [ ] 統合テスト実行
+- [ ] 手動テスト完了
+
+## チェックリスト
+- [ ] コードレビュー完了
+- [ ] テスト通過
+- [ ] ドキュメント更新
+- [ ] 破壊的変更の確認
+
+## 関連Issue
+Closes #[issue番号]
+```
+
+## リリース管理
+
+### バージョニング（Semantic Versioning）
+- **MAJOR.MINOR.PATCH** (例: 1.2.3)
+- **MAJOR**: 破壊的変更
+- **MINOR**: 新機能追加（後方互換性あり）
+- **PATCH**: バグ修正
+
+### リリースブランチ
+```bash
+# リリースブランチ作成
+git checkout develop
+git checkout -b release/v1.2.0
+
+# バージョン更新
+npm version minor
+
+# リリース準備完了後
+git checkout main
+git merge release/v1.2.0
+git tag v1.2.0
+git push origin main --tags
+
+# developにもマージ
+git checkout develop
+git merge release/v1.2.0
+```
+
+## 緊急修正（Hotfix）
 
 ```bash
-# developからreleaseブランチを作成
-git checkout develop
-git checkout -b release/v1.0.0
-
-# バージョン番号の更新やリリースノートの作成
-# バグ修正があれば実施
-
-# mainとdevelopにマージ
+# mainから緊急修正ブランチ作成
 git checkout main
-git merge --no-ff release/v1.0.0
-git tag v1.0.0
+git checkout -b hotfix/critical-security-fix
+
+# 修正作業
+git add .
+git commit -m "fix(security): patch critical vulnerability"
+
+# mainとdevelopの両方にマージ
+git checkout main
+git merge hotfix/critical-security-fix
+git tag v1.2.1
+git push origin main --tags
 
 git checkout develop
-git merge --no-ff release/v1.0.0
+git merge hotfix/critical-security-fix
+git push origin develop
 ```
 
-### 3. 緊急修正
+## 便利なGitコマンド
 
+### 履歴確認
 ```bash
-# mainからhotfixブランチを作成
-git checkout main
-git checkout -b hotfix/456-critical-fix
+# グラフィカルなログ表示
+git log --oneline --graph --all
 
-# 修正を実施
-git commit -m "fix: 緊急バグの修正"
+# 特定ファイルの変更履歴
+git log --follow -- path/to/file
 
-# mainとdevelopにマージ
-git checkout main
-git merge --no-ff hotfix/456-critical-fix
-git tag v1.0.1
-
-git checkout develop
-git merge --no-ff hotfix/456-critical-fix
+# 差分確認
+git diff HEAD~1
 ```
 
-## プルリクエストのルール
+### ブランチ管理
+```bash
+# リモートブランチと同期
+git remote prune origin
 
-1. **レビュー必須**: 最低1名のレビューと承認が必要
-2. **CI/CDパス**: すべてのテストとビルドが成功している必要
-3. **コンフリクト解消**: マージ前にコンフリクトを解消
-4. **スクワッシュマージ**: featureブランチはスクワッシュマージを推奨
+# マージ済みブランチの確認
+git branch --merged
 
-## 保護ルール
+# 未マージブランチの確認
+git branch --no-merged
+```
 
-### mainブランチ
+### 便利なエイリアス
+```bash
+# .gitconfigに追加
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit
+git config --global alias.st status
+git config --global alias.unstage 'reset HEAD --'
+git config --global alias.last 'log -1 HEAD'
+git config --global alias.visual '!gitk'
+```
 
-- 直接プッシュ禁止
-- Pull Request必須
-- レビュー承認必須
-- CI/CDパス必須
+## CI/CD統合
 
-### developブランチ
+### GitHub Actions
+- プルリクエスト時の自動テスト実行
+- コードカバレッジ測定
+- 自動デプロイメント
 
-- 直接プッシュ禁止
-- Pull Request必須
-- CI/CDパス必須
+### 品質チェック
+- ESLint/Prettier実行
+- TypeScript型チェック
+- テストカバレッジ閾値チェック
+
+## トラブルシューティング
+
+### よくある問題
+
+1. **マージコンフリクト**
+```bash
+git status
+git add <解決したファイル>
+git commit
+```
+
+2. **間違ったコミットの取り消し**
+```bash
+# 最後のコミットを取り消し（変更は保持）
+git reset --soft HEAD~1
+
+# 最後のコミットを完全に取り消し
+git reset --hard HEAD~1
+```
+
+3. **プッシュの取り消し**
+```bash
+# 危険：共有ブランチでは使用禁止
+git push origin +HEAD~1:branch-name
+```
+
+## セキュリティ考慮事項
+
+- 機密情報（API キー、パスワード）をコミットしない
+- `.gitignore`を適切に設定
+- 環境変数を使用
+- 定期的な依存関係の更新
+
+## チーム協力
+
+- 定期的なコードレビュー
+- ペアプログラミングの活用
+- 技術的負債の管理
+- ドキュメントの継続的更新

@@ -22,8 +22,8 @@ export interface Database {
                 }
                 Insert: {
                     id: string
-                    username: string
-                    display_name: string
+                    username?: string
+                    display_name?: string
                     role?: 'individual' | 'leader' | 'member'
                     level?: number
                     experience?: number
