@@ -24,6 +24,7 @@ interface AuthActions {
     initialize: () => Promise<void>
     updateProfile: (updates: Partial<UserProfile>) => Promise<void>
     fetchProfile: () => Promise<void>
+    setUser: (user: User | null) => void
     clearError: () => void
     resetAuth: () => void
 }
@@ -227,6 +228,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                     set({ loading: false })
                 }
             },
+
+            setUser: (user: User | null) => set({ user }),
 
             clearError: () => set({ error: null }),
 
