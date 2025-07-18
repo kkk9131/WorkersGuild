@@ -1,9 +1,9 @@
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  Pressable, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  KeyboardAvoidingView,
   Platform,
   Alert,
   ActivityIndicator,
@@ -20,7 +20,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { setUser } = useAuthStore();
+  const { signIn, error, clearError } = useAuthStore();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -28,52 +28,13 @@ export default function LoginScreen() {
       return;
     }
 
+    clearError();
     setLoading(true);
+
     try {
-      // Supabaseでログイン
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        // プロフィール情報を取得
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        if (profileError) {
-          console.error('プロフィール取得エラー:', profileError);
-        }
-
-        // ストアに保存
-        setUser({
-          id: data.user.id,
-          email: data.user.email!,
-          name: profile?.name || '',
-          role: profile?.role || 'individual',
-          level: profile?.level || 1,
-          exp: profile?.exp || 0,
-          skills: profile?.skills || {
-            strength: 0,
-            technique: 0,
-            speed: 0,
-            intelligence: 0,
-            teamwork: 0,
-          },
-          evolution_stage: profile?.evolution_stage || 1,
-          team_id: profile?.team_id || null,
-          created_at: data.user.created_at,
-          updated_at: profile?.updated_at || new Date().toISOString(),
-        });
-
-        // ホーム画面へ遷移
-        router.replace('/tabs');
-      }
+      await signIn(email.trim(), password);
+      // ログイン成功時はAuthStoreのauth state changeリスナーが自動的に処理
+      router.replace('/tabs');
     } catch (error: any) {
       Alert.alert('ログインエラー', error.message || 'ログインに失敗しました。');
     } finally {
@@ -82,7 +43,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >

@@ -1,9 +1,9 @@
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  Pressable, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   Alert,
@@ -23,7 +23,7 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { setUser } = useAuthStore();
+  const { signUp, error, clearError } = useAuthStore();
 
   const handleRegister = async () => {
     // バリデーション
@@ -42,79 +42,26 @@ export default function RegisterScreen() {
       return;
     }
 
+    clearError();
     setLoading(true);
+
     try {
-      // Supabaseで新規登録
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          data: {
-            name: name.trim(),
-          },
-        },
+      // AuthStoreのsignUpメソッドを使用
+      await signUp(email.trim(), password, {
+        username: name.trim().toLowerCase().replace(/\s+/g, '_'),
+        display_name: name.trim()
       });
 
-      if (error) throw error;
-
-      if (data.user) {
-        // プロフィールテーブルにレコードを作成
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: data.user.email!,
-            name: name.trim(),
-            role: 'individual',
-            level: 1,
-            exp: 0,
-            skills: {
-              strength: 0,
-              technique: 0,
-              speed: 0,
-              intelligence: 0,
-              teamwork: 0,
-            },
-            evolution_stage: 1,
-          });
-
-        if (profileError) {
-          console.error('プロフィール作成エラー:', profileError);
-          // プロフィール作成に失敗してもユーザーは作成されているので続行
-        }
-
-        // ストアに保存
-        setUser({
-          id: data.user.id,
-          email: data.user.email!,
-          name: name.trim(),
-          role: 'individual',
-          level: 1,
-          exp: 0,
-          skills: {
-            strength: 0,
-            technique: 0,
-            speed: 0,
-            intelligence: 0,
-            teamwork: 0,
+      Alert.alert(
+        '登録完了',
+        'アカウントが作成されました。',
+        [
+          {
+            text: 'OK',
+            onPress: () => router.replace('/tabs'),
           },
-          evolution_stage: 1,
-          team_id: null,
-          created_at: data.user.created_at,
-          updated_at: new Date().toISOString(),
-        });
-
-        Alert.alert(
-          '登録完了',
-          'アカウントが作成されました。',
-          [
-            {
-              text: 'OK',
-              onPress: () => router.replace('/tabs'),
-            },
-          ]
-        );
-      }
+        ]
+      );
     } catch (error: any) {
       Alert.alert('登録エラー', error.message || '登録に失敗しました。');
     } finally {
@@ -123,7 +70,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >

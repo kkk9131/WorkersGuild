@@ -16,6 +16,7 @@ interface ThemedButtonProps extends Omit<PressableProps, 'children'> {
   children: React.ReactNode;
   isLoading?: boolean;
   animate?: boolean;
+  className?: string;
 }
 
 const sizeStyles = {

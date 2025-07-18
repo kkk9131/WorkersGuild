@@ -9,7 +9,7 @@ import { SKILL_TYPES } from '@/lib/constants';
 
 export default function ProfileTab() {
   const router = useRouter();
-  const { user, signOut } = useAuthStore();
+  const { user, profile, signOut } = useAuthStore();
   const { skills } = useGameStore();
   const { theme, toggleTheme } = useThemeStore();
   const isGameTheme = theme === 'game';
@@ -63,18 +63,18 @@ export default function ProfileTab() {
           <View style={styles.profileHeader}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>
-                {user?.name?.charAt(0) || '?'}
+                {profile?.display_name?.charAt(0) || '?'}
               </Text>
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.userName}>{user?.name || 'ゲスト'}</Text>
+              <Text style={styles.userName}>{profile?.display_name || 'ゲスト'}</Text>
               <Text style={styles.userEmail}>{user?.email}</Text>
               <Text style={[
                 styles.userRole,
                 { color: isGameTheme ? colors.game.gold : colors.game.primary }
               ]}>
-                {user?.role === 'individual' ? '個人' : 
-                 user?.role === 'leader' ? 'リーダー' : 'メンバー'}
+                {profile?.role === 'individual' ? '個人' :
+                  profile?.role === 'leader' ? 'リーダー' : 'メンバー'}
               </Text>
             </View>
           </View>
@@ -87,15 +87,15 @@ export default function ProfileTab() {
           styles.skillsCard
         ]}>
           <Text style={styles.sectionTitle}>スキルステータス</Text>
-          
+
           {SKILL_TYPES.map((skill) => (
             <View key={skill} style={styles.skillRow}>
               <Text style={styles.skillLabel}>{skillLabels[skill]}</Text>
               <View style={styles.skillBarContainer}>
-                <View 
+                <View
                   style={[
                     styles.skillBar,
-                    { 
+                    {
                       width: `${skills[skill]}%`,
                       backgroundColor: isGameTheme ? colors.game.exp : colors.game.primary
                     }
@@ -110,7 +110,7 @@ export default function ProfileTab() {
         {/* 設定 */}
         <View style={styles.settingsSection}>
           <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>設定</Text>
-          
+
           <Pressable
             onPress={toggleTheme}
             style={[commonStyles.buttonSecondary, styles.settingButton]}

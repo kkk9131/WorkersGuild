@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 interface CardProps extends ViewProps {
   variant?: 'default' | 'elevated' | 'bordered';
   children: ReactNode;
+  className?: string;
 }
 
 const variantStyles = {

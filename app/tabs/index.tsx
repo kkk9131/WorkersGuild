@@ -6,7 +6,7 @@ import { colors, commonStyles } from '@/lib/styles';
 import { EVOLUTION_STAGES } from '@/lib/constants';
 
 export default function HomeTab() {
-  const { user } = useAuthStore();
+  const { user, profile } = useAuthStore();
   const { level, levelProgress, evolutionStage } = useGameStore();
   const { theme } = useThemeStore();
   const isGameTheme = theme === 'game';
@@ -29,7 +29,7 @@ export default function HomeTab() {
             styles.userName,
             isGameTheme && styles.userNameGame
           ]}>
-            {user?.name || 'ゲスト'}さん
+            {profile?.display_name || 'ゲスト'}さん
           </Text>
         </View>
 
@@ -40,7 +40,7 @@ export default function HomeTab() {
           styles.statusCard
         ]}>
           <Text style={styles.sectionTitle}>現在のステータス</Text>
-          
+
           <View style={styles.statusRow}>
             <Text style={styles.statusLabel}>レベル</Text>
             <Text style={[
@@ -64,10 +64,10 @@ export default function HomeTab() {
           <View style={styles.progressContainer}>
             <Text style={styles.statusLabel}>次のレベルまで</Text>
             <View style={styles.progressBar}>
-              <View 
+              <View
                 style={[
                   styles.progressFill,
-                  { 
+                  {
                     width: `${levelProgress * 100}%`,
                     backgroundColor: isGameTheme ? colors.game.exp : colors.game.primary
                   }
@@ -83,7 +83,7 @@ export default function HomeTab() {
           <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>
             クイックアクション
           </Text>
-          
+
           <Pressable style={[
             commonStyles.buttonPrimary,
             isGameTheme && commonStyles.shadow
@@ -106,7 +106,7 @@ export default function HomeTab() {
           styles.statsCard
         ]}>
           <Text style={styles.sectionTitle}>今週の統計</Text>
-          
+
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>12</Text>
