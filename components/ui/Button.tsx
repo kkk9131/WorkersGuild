@@ -9,6 +9,7 @@ interface ButtonProps extends PressableProps {
   size?: ButtonSize;
   children: React.ReactNode;
   isLoading?: boolean;
+  className?: string;
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
@@ -40,9 +41,8 @@ export const Button = forwardRef<any, ButtonProps>(
     return (
       <Pressable
         ref={ref}
-        className={`${variantStyle} ${sizeStyle.button} rounded-lg items-center justify-center active:opacity-80 ${
-          disabled || isLoading ? 'opacity-50' : ''
-        } ${className || ''}`}
+        className={`${variantStyle} ${sizeStyle.button} rounded-lg items-center justify-center active:opacity-80 ${disabled || isLoading ? 'opacity-50' : ''
+          } ${className || ''}`}
         disabled={disabled || isLoading}
         {...props}
       >

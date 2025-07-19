@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils';
 interface ThemedContainerProps extends ViewProps {
   variant?: 'primary' | 'secondary' | 'card' | 'overlay';
   noStatusBar?: boolean;
+  className?: string;
+  children: React.ReactNode;
 }
 
 export function ThemedContainer({
@@ -18,7 +20,7 @@ export function ThemedContainer({
 }: ThemedContainerProps) {
   const { theme } = useThemeStore();
   const themeStyles = getThemeStyles(theme);
-  
+
   return (
     <View
       className={cn(

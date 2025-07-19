@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Session, User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { Database } from '../types/database'
+import { ensureUserProfile, retryProfileCreation, validateProfileData } from '../lib/profileUtils'
 
 type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 
@@ -23,6 +24,7 @@ interface AuthActions {
     initialize: () => Promise<void>
     updateProfile: (updates: Partial<UserProfile>) => Promise<void>
     fetchProfile: () => Promise<void>
+    setUser: (user: User | null) => void
     clearError: () => void
     resetAuth: () => void
 }
@@ -84,21 +86,39 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                     const { data, error } = await supabase.auth.signUp({
                         email,
                         password,
+                        options: {
+                            data: {
+                                username: userData.username,
+                                display_name: userData.display_name,
+                                full_name: userData.display_name,
+                            }
+                        }
                     })
 
                     if (error) throw error
 
-                    // Create user profile
-                    if (data.user) {
-                        const { error: profileError } = await supabase
-                            .from('user_profiles')
-                            .insert({
-                                id: data.user.id,
-                                username: userData.username,
-                                display_name: userData.display_name,
-                            })
+                    // Profile creation is now handled by database trigger
+                    // But we can still manually create/update if needed
+                    if (data.user && data.user.email_confirmed_at) {
+                        try {
+                            const { error: profileError } = await supabase
+                                .from('user_profiles')
+                                .upsert({
+                                    id: data.user.id,
+                                    username: userData.username,
+                                    display_name: userData.display_name,
+                                }, {
+                                    onConflict: 'id'
+                                })
 
-                        if (profileError) throw profileError
+                            if (profileError) {
+                                console.warn('Profile creation warning:', profileError.message)
+                                // Don't throw error - user creation was successful
+                            }
+                        } catch (profileError: any) {
+                            console.warn('Profile creation failed, but user was created:', profileError.message)
+                            // Continue - the trigger should have handled profile creation
+                        }
                     }
                 } catch (error: any) {
                     console.error('Sign up error:', error)
@@ -151,18 +171,33 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                     const { user } = get()
                     if (!user) return
 
-                    const { data, error } = await supabase
-                        .from('user_profiles')
-                        .select('*')
-                        .eq('id', user.id)
-                        .single()
+                    // Use the utility function to ensure profile exists
+                    const result = await ensureUserProfile(user.id, {
+                        email: user.email || undefined,
+                        username: user.user_metadata?.username,
+                        display_name: user.user_metadata?.display_name || user.user_metadata?.full_name
+                    })
 
-                    if (error) {
-                        console.error('Fetch profile error:', error)
-                        return
+                    if (result.success && result.profile) {
+                        set({ profile: result.profile })
+                    } else if (result.needsManualCreation) {
+                        // Try retry mechanism for critical profile creation
+                        console.log('Attempting profile creation with retry...')
+                        const retryResult = await retryProfileCreation(user.id, {
+                            username: user.user_metadata?.username || `user_${user.id.substring(0, 8)}`,
+                            display_name: user.user_metadata?.display_name || user.email?.split('@')[0] || 'New User'
+                        })
+
+                        if (retryResult.success && retryResult.profile) {
+                            set({ profile: retryResult.profile })
+                        } else {
+                            console.error('Profile creation failed after retries:', retryResult.error)
+                            set({ error: `Profile creation failed: ${retryResult.error}` })
+                        }
+                    } else {
+                        console.error('Profile fetch failed:', result.error)
+                        set({ error: result.error })
                     }
-
-                    set({ profile: data })
                 } catch (error: any) {
                     console.error('Fetch profile error:', error)
                     set({ error: error.message })
@@ -193,6 +228,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
                     set({ loading: false })
                 }
             },
+
+            setUser: (user: User | null) => set({ user }),
 
             clearError: () => set({ error: null }),
 

@@ -5,6 +5,7 @@ interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
   helperText?: string;
+  className?: string;
 }
 
 export const Input = forwardRef<TextInput, InputProps>(
@@ -17,9 +18,8 @@ export const Input = forwardRef<TextInput, InputProps>(
         <TextInput
           ref={ref}
           placeholderTextColor="#6B7280"
-          className={`bg-business-secondary border ${
-            error ? 'border-red-500' : 'border-business-border'
-          } rounded-lg px-4 py-3 text-business-text ${className || ''}`}
+          className={`bg-business-secondary border ${error ? 'border-red-500' : 'border-business-border'
+            } rounded-lg px-4 py-3 text-business-text ${className || ''}`}
           {...props}
         />
         {error && (

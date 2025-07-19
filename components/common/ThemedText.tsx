@@ -7,6 +7,8 @@ interface ThemedTextProps extends TextProps {
   variant?: 'primary' | 'secondary' | 'accent' | 'muted';
   size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
   weight?: 'normal' | 'medium' | 'semibold' | 'bold';
+  className?: string;
+  children: React.ReactNode;
 }
 
 const sizeClasses = {
@@ -37,7 +39,7 @@ export function ThemedText({
 }: ThemedTextProps) {
   const { theme } = useThemeStore();
   const themeStyles = getThemeStyles(theme);
-  
+
   return (
     <Text
       className={cn(

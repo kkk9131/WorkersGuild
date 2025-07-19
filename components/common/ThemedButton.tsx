@@ -10,12 +10,13 @@ import Animated, {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-interface ThemedButtonProps extends Omit<PressableProps, 'children'> {
+interface ThemedButtonProps extends PressableProps {
   variant?: 'primary' | 'secondary' | 'success' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
   isLoading?: boolean;
   animate?: boolean;
+  className?: string;
 }
 
 const sizeStyles = {
